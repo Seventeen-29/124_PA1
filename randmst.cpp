@@ -4,6 +4,7 @@
 **/
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <vector>
 #include <string>
@@ -13,6 +14,7 @@
 #include <chrono>
 
 using namespace std;
+const double scalar = 3.0;
 
 double dist(vector<double> pt1, vector<double> pt2){
   double sum = 0;
@@ -71,8 +73,18 @@ double prims(int numVertices, int numDimensions){
 	vector<double> distances(numVertices, numDimensions * 1.0);
 	distances[0] = 0.0; //pick starting vertex to be index 0
 	double totalEdgeWeight = 0;
+	double weight_threshold = sqrt(numDimensions); //worst case distance bound, unused for n = 0, 2, 3, 4
 
-	double weight_threshold = 0.025; //calculate with k(n) approx
+	if(numDimensions == 2){
+		weight_threshold = scalar * 0.7 * pow(numVertices, -0.5);
+	}
+	else if(numDimensions == 3){
+		weight_threshold = scalar * pow(numVertices, -0.37);
+	}
+	else if(numDimensions == 4){
+		weight_threshold = scalar * pow(numVertices, -0.29) + pow(numVertices, -1.7);
+	}
+
 	int grid_size = ceil (1 / weight_threshold);
 	vector<vector<int>> boxes(pow(grid_size, numDimensions));
 
@@ -108,7 +120,7 @@ double prims(int numVertices, int numDimensions){
 				}
 			}
 		}
-		if (i % 50 == 0){
+	if (i % 150 == 0){
 			printf ("%2.2f%%\n", 100 * ((double) i) / numVertices);
 		}
 	}
@@ -135,9 +147,8 @@ int main(int argc, char *argv[]){
 	auto stop = chrono::high_resolution_clock::now(); 
 	auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start); 
 
-	cout << duration.count() << " ms" << endl; 
-
-	cout << "N = " << n << ". Average MST total weight: " << results << endl;
+	cout << "N = " << n << ". Dim = " << numDimensions << ". AVG MST weight: " << results << " [" <<
+  duration.count() << " ms]" << endl;
 }
 
 // n ^(1 - 1/d) --> RUNTIME
