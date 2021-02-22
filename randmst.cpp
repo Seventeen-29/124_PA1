@@ -65,7 +65,7 @@ vector<int> getNearbyBoxes(int currBox, int gridSize, int numDimensions){
 	return output;
 }
 
-double prims(int numVertices, int numDimensions){
+double prims(int numVertices, int numDimensions, int suppressOutput){
 	if (numDimensions <= 0){
 		throw invalid_argument("bad call prims_nonzero on dim <= 0");
 	}
@@ -86,7 +86,9 @@ double prims(int numVertices, int numDimensions){
 		weight_threshold = scalar * pow(numVertices, -0.29) + pow(numVertices, -1.7);
 	}
 
-	cout << "Using weight_threshold k(N) = " << weight_threshold << endl;
+	if(suppressOutput != 0){
+		cout << "Using weight_threshold k(N) = " << weight_threshold << endl;
+	}
 
 	int grid_size = ceil (1 / weight_threshold);
 	vector<vector<int>> boxes(pow(grid_size, numDimensions));
@@ -123,7 +125,7 @@ double prims(int numVertices, int numDimensions){
 				}
 			}
 		}
-	if (i % 700 == 0){
+	if (suppressOutput != 0 && i % 700 == 0){
 			printf ("%2.2f%%\n", 100 * ((double) i) / numVertices);
 		}
 	}
@@ -143,15 +145,20 @@ int main(int argc, char *argv[]){
 	double results = 0.0;
 	for (int i = 0; i < numTrials; i++)
 	{
-		results +=  prims(n, numDimensions);
+		results +=  prims(n, numDimensions, flag);
 	}
 	results = results / numTrials;
 
 	auto stop = chrono::high_resolution_clock::now(); 
 	auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start); 
 
-	cout << "N = " << n << ". Dim = " << numDimensions << ". AVG MST weight: " << results << " [" <<
+	if(flag == 1){
+		cout << "N = " << n << ". Dim = " << numDimensions << ". AVG MST weight: " << results << " [" <<
  		duration.count() << " ms]" << endl;
+	}
+	else{
+		cout << results << " " << n << " " << numTrials << " " << numDimensions << endl;
+	}
 }
 
 // n ^(1 - 1/d) --> RUNTIME
