@@ -14,7 +14,8 @@
 #include <chrono>
 
 using namespace std;
-const double scalar = 3.0;
+const double scalar = 1.8; //k(n) = scalar * (expected edge weight)
+const int non_opt_threshold = 128; //optimize using k(n) if numVertices > threshold
 
 double dist(vector<double> pt1, vector<double> pt2){
   double sum = 0;
@@ -75,15 +76,17 @@ double prims(int numVertices, int numDimensions){
 	double totalEdgeWeight = 0;
 	double weight_threshold = sqrt(numDimensions); //worst case distance bound, unused for n = 0, 2, 3, 4
 
-	if(numDimensions == 2){
+	if(numDimensions == 2 && numVertices > non_opt_threshold){
 		weight_threshold = scalar * 0.7 * pow(numVertices, -0.5);
 	}
-	else if(numDimensions == 3){
+	else if(numDimensions == 3 && numVertices > non_opt_threshold){
 		weight_threshold = scalar * pow(numVertices, -0.37);
 	}
-	else if(numDimensions == 4){
+	else if(numDimensions == 4 && numVertices > non_opt_threshold){
 		weight_threshold = scalar * pow(numVertices, -0.29) + pow(numVertices, -1.7);
 	}
+
+	cout << "Using weight_threshold k(N) = " << weight_threshold << endl;
 
 	int grid_size = ceil (1 / weight_threshold);
 	vector<vector<int>> boxes(pow(grid_size, numDimensions));
@@ -120,7 +123,7 @@ double prims(int numVertices, int numDimensions){
 				}
 			}
 		}
-	if (i % 150 == 0){
+	if (i % 700 == 0){
 			printf ("%2.2f%%\n", 100 * ((double) i) / numVertices);
 		}
 	}
@@ -148,7 +151,7 @@ int main(int argc, char *argv[]){
 	auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start); 
 
 	cout << "N = " << n << ". Dim = " << numDimensions << ". AVG MST weight: " << results << " [" <<
-  duration.count() << " ms]" << endl;
+ 		duration.count() << " ms]" << endl;
 }
 
 // n ^(1 - 1/d) --> RUNTIME
