@@ -67,7 +67,7 @@ vector<int> getNearbyBoxes(int currBox, int gridSize, int numDimensions){
 
 double prims(int numVertices, int numDimensions, int suppressOutput){
 	if (numDimensions <= 0){
-		throw invalid_argument("bad call prims_nonzero on dim <= 0");
+		throw invalid_argument("error: prims_nonzero dim must be > 0");
 	}
 	vector<vector<double>> graphVertices;
 	vector<bool> visited(numVertices, false);
@@ -86,7 +86,7 @@ double prims(int numVertices, int numDimensions, int suppressOutput){
 		weight_threshold = scalar * pow(numVertices, -0.29) + pow(numVertices, -1.7);
 	}
 
-	if(suppressOutput != 0){
+	if(suppressOutput > 0){
 		cout << "Using weight_threshold k(N) = " << weight_threshold << endl;
 	}
 
@@ -125,7 +125,44 @@ double prims(int numVertices, int numDimensions, int suppressOutput){
 				}
 			}
 		}
-	if (suppressOutput != 0 && i % 700 == 0){
+	if (suppressOutput > 1 && i % 700 == 0){
+			printf ("%2.2f%%\n", 100 * ((double) i) / numVertices);
+		}
+	}
+
+	return totalEdgeWeight;
+}
+
+double primsZero(int numVertices, int suppressOutput){
+	vector<bool> visited(numVertices, false);
+	vector<double> distances(numVertices, 10.0);
+	distances[0] = 0.0; //pick starting vertex to be index 0
+	double totalEdgeWeight = 0;
+
+	for (int i = 0; i < numVertices; ++i){
+		int minIndex = -1;
+		double minDist = 1000.0;
+		//find minimal distance vertex that is not yet visited, get index
+		for(int k = 0; k < numVertices; ++k){
+			if (!visited[k] && (distances[k] < minDist)){
+				minIndex = k;
+				minDist = distances[k];
+			}
+		}
+
+		totalEdgeWeight += distances[minIndex];
+		visited[minIndex] = true;
+
+		for(int k = 0; k < numVertices; ++k){
+			if(!visited[k]){
+				double currDist = (double) rand()/RAND_MAX;
+				if(currDist < distances[k]){
+					distances[k] = currDist;
+				}
+			}
+		}
+		
+		if (suppressOutput > 1 && i % 700 == 0){
 			printf ("%2.2f%%\n", 100 * ((double) i) / numVertices);
 		}
 	}
@@ -145,14 +182,21 @@ int main(int argc, char *argv[]){
 	double results = 0.0;
 	for (int i = 0; i < numTrials; i++)
 	{
-		results +=  prims(n, numDimensions, flag);
+		double currResult = 0;
+		if(numDimensions == 0){
+			currResult = primsZero(n, flag);
+		}
+		else{
+			currResult = prims(n, numDimensions, flag);
+		}
+		results += currResult;
 	}
 	results = results / numTrials;
 
 	auto stop = chrono::high_resolution_clock::now(); 
 	auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start); 
 
-	if(flag == 1){
+	if(flag > 0){
 		cout << "N = " << n << ". Dim = " << numDimensions << ". AVG MST weight: " << results << " [" <<
  		duration.count() << " ms]" << endl;
 	}
@@ -160,5 +204,3 @@ int main(int argc, char *argv[]){
 		cout << results << " " << n << " " << numTrials << " " << numDimensions << endl;
 	}
 }
-
-// n ^(1 - 1/d) --> RUNTIME
