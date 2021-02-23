@@ -7,8 +7,8 @@ Usage:
 ./randmst suppressOutput numPoints numTrials numDimensions
 
 suppressOutput =
-    0 -> normal output as required by assignment
-    1 -> display value of k(n) + timing data
+    0 -> normal output as required by assignment  
+    1 -> display value of k(n) + timing data  
     2 -> display value of k(n) + progress percentages + timing data
 
 other arguments self-explanatory
